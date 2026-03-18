@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strateji Planlama Tahtası</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        #toolbar {
+            padding: 10px;
+            background: #333;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-clear { background: #ff4d4d; color: white; }
+        .btn-clear:hover { background: #cc0000; }
+
+        .btn-color { background: #4CAF50; color: white; }
+        .btn-color:hover { background: #45a049; }
+
+        #canvas-container {
+            position: relative;
+            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+            background-color: white;
+        }
+
+        #field-img {
+            display: none; /* Arka planda yüklenmesi için */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toolbar">
+        <button class="btn-color" onclick="changeColor()">Çizgi Rengini Değiştir</button>
+        <button class="btn-clear" onclick="clearCanvas()">Ekranı Temizle</button>
+        <span style="color: white; line-height: 35px;">Aktif Renk: <b id="color-indicator" style="color: red;">Kırmızı</b></span>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="strategyCanvas"></canvas>
+    </div>
+
+    <img id="field-img" src="https://i.ibb.co/680pZ7Y/66555.png" alt="Saha">
+
+    <script>
+        const canvas = document.getElementById('strategyCanvas');
+        const ctx = canvas.getContext('2d');
+        const img = document.getElementById('field-img');
+        const colorIndicator = document.getElementById('color-indicator');
+
+        let drawing = false;
+        let colors = ['red', 'blue', 'green', 'black', 'orange'];
+        let colorIndex = 0;
+
+        // Görsel yüklendiğinde canvas boyutlarını ayarla
+        img.onload = function() {
+            setupCanvas();
+        };
+
+        function setupCanvas() {
+            // Görselin orijinal boyutlarını kullanıyoruz
+            canvas.width = img.width;
+            canvas.height = img.height;
+            drawBackground();
+        }
+
+        function drawBackground() {
+            ctx.drawImage(img, 0, 0);
+        }
+
+        // Çizim İşlemleri
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        function startDrawing(e) {
+            drawing = true;
+            draw(e); 
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = colors[colorIndex];
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.beginPath();
+        }
+
+        // Buton Fonksiyonları
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+        }
+
+        function changeColor() {
+            colorIndex = (colorIndex + 1) % colors.length;
+            const activeColor = colors[colorIndex];
+            colorIndicator.innerText = activeColor.charAt(0).toUpperCase() + activeColor.slice(1);
+            colorIndicator.style.color = activeColor;
+        }
+    </script>
+
+</body>
+</html>

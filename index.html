@@ -72,16 +72,16 @@
 <body>
 
     <div id="toolbar">
-        <button class="btn-color" onclick="changeColor()">Çizgi Rengini Değiştir</button>
-        <button class="btn-clear" onclick="clearCanvas()">Ekranı Temizle</button>
-        <span style="color: white; line-height: 35px;">Aktif Renk: <b id="color-indicator" style="color: red;">Kırmızı</b></span>
-    </div>
+    <button class="btn-color" onclick="changeColor()">Renk Değiştir</button>
+    <button class="btn-clear" onclick="clearCanvas()">Ekranı Temizle</button>
+    <span style="color: white; line-height: 35px;">Aktif Renk: <b id="color-indicator" style="color: purple;">Mor</b></span>
+</div>
 
     <div id="canvas-container">
         <canvas id="strategyCanvas"></canvas>
     </div>
 
-    <img id="field-img" src="9a0f9c1a324fc491e5bf47c08c16d7a21c974fed.png" alt="Saha">
+    <img id="field-img" src="206e9d4c4e4694182931687e446909883ab232f3.png" alt="Saha">
 
     <script>
         const canvas = document.getElementById('strategyCanvas');
@@ -90,8 +90,27 @@
         const colorIndicator = document.getElementById('color-indicator');
 
         let drawing = false;
-        let colors = ['red', 'blue', 'green', 'black', 'orange'];
+        // İstediğin renkleri buraya ekledik
+        let colors = ['purple', 'black', 'blue']; 
+        let colorNames = ['Mor', 'Siyah', 'Mavi'];
         let colorIndex = 0;
+
+        // Renk değiştirme fonksiyonu
+        function changeColor() {
+            colorIndex = (colorIndex + 1) % colors.length;
+            const activeColor = colors[colorIndex];
+            const activeName = colorNames[colorIndex];
+            
+            colorIndicator.innerText = activeName;
+            colorIndicator.style.color = activeColor;
+            
+            // Siyah renk koyu gri arka planda görünmezse diye beyaz gölge ekleyelim
+            if(activeColor === 'black') {
+                colorIndicator.style.textShadow = "1px 1px 0px white";
+            } else {
+                colorIndicator.style.textShadow = "none";
+            }
+        }
 
         // Görsel yüklendiğinde canvas boyutlarını ayarla
         img.onload = function() {

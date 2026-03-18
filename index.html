@@ -6,33 +6,81 @@
     <title>8182 Dragon Strateji</title>
     <style>
         body { margin: 0; display: flex; flex-direction: column; align-items: center; background-color: #121212; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
-        #toolbar { padding: 0 20px; background: #1e1e1e; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #bc13fe; box-sizing: border-box; z-index: 100; }
-        #logo-section { display: flex; align-items: center; gap: 10px; }
-        #team-logo { height: 45px; filter: drop-shadow(0 0 5px #bc13fe); }
+        
+        #toolbar { 
+            padding: 0 20px; 
+            background: #1e1e1e; 
+            width: 100%; 
+            height: 75px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 2px solid #bc13fe; 
+            box-sizing: border-box; 
+            z-index: 100; 
+        }
+
+        /* Logo Bölümü Düzenlendi */
+        #logo-section { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            min-width: 200px;
+        }
+
+        #team-logo { 
+            height: 55px; /* Boyut artırıldı */
+            width: auto;
+            display: block;
+            filter: drop-shadow(0 0 5px #bc13fe); 
+        }
+
+        #logo-section span { color: white; font-weight: bold; font-size: 1.1rem; }
+
         .tab-container { display: flex; gap: 5px; background: #333; padding: 5px; border-radius: 8px; }
-        .tab-btn { padding: 8px 20px; background: transparent; color: #888; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .tab-btn { padding: 10px 20px; background: transparent; color: #888; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .tab-btn.active { background: #bc13fe; color: white; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn-action { padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
-        #canvas-wrapper { position: relative; flex-grow: 1; width: 100%; display: flex; justify-content: center; align-items: center; padding: 10px; box-sizing: border-box; }
-        canvas { position: absolute; background-color: white; box-shadow: 0 0 20px rgba(0,0,0,0.5); touch-action: none; display: none; }
+
+        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .btn-action { padding: 10px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
+        
+        #canvas-wrapper { position: relative; flex-grow: 1; width: 100%; display: flex; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
+        
+        canvas { 
+            position: absolute; 
+            background-color: white; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.6); 
+            touch-action: none; 
+            display: none; 
+            border-radius: 4px;
+        }
         canvas.active { display: block; }
-        img { display: none; }
+        
+        #field-img { display: none; }
+
+        @media (max-width: 768px) {
+            #logo-section span { display: none; }
+            #logo-section { min-width: auto; }
+        }
     </style>
 </head>
 <body>
 
     <div id="toolbar">
         <div id="logo-section">
-            <img src="logo.png" id="team-logo" onerror="this.style.display='none'">
-            <span style="color:white; font-weight: bold;">DRAGON 8182</span>
+            <img src="logo.png" id="team-logo" alt="8182 Logo">
+            <span>DRAGON 8182</span>
         </div>
+
         <div class="tab-container">
-            <button class="tab-btn active" onclick="switchTab('auto', this)">OTONOM</button>
-            <button class="tab-btn" onclick="switchTab('teleop', this)">TELEOP</button>
+            <button id="btn-auto" class="tab-btn active" onclick="switchTab('auto')">OTONOM</button>
+            <button id="btn-teleop" class="tab-btn" onclick="switchTab('teleop')">TELEOP</button>
         </div>
+
         <div class="btn-group">
-            <button class="btn-action" style="background:#444; color:white; border:1px solid #bc13fe" onclick="changeColor()">Renk: <span id="color-text" style="color:#bc13fe">Mor</span></button>
+            <button class="btn-action" style="background:#444; color:white; border:1px solid #bc13fe" onclick="changeColor()">
+                Renk: <span id="color-text" style="color:#bc13fe">Mor</span>
+            </button>
             <button class="btn-action" style="background:#ff4d4d; color:white" onclick="clearCurrentCanvas()">Temizle</button>
         </div>
     </div>
@@ -58,105 +106,15 @@
         let colorNames = ['Mor', 'Siyah', 'Mavi'];
         let colorIndex = 0;
 
-        // Görsel yüklendiğinde veya hata verdiğinde çalıştır
-        function startSystem() {
+        // Sayfa yüklenince başlat
+        function start() {
             setupCanvas('auto');
             setupCanvas('teleop');
         }
 
-        img.onload = startSystem;
-        img.onerror = () => { console.error("Saha görseli bulunamadı!"); startSystem(); };
-        if (img.complete) startSystem();
-
-        window.onresize = startSystem;
+        img.onload = start;
+        if (img.complete) start();
+        window.onresize = start;
 
         function setupCanvas(mode) {
-            const wrapper = document.getElementById('canvas-wrapper');
-            const target = canvases[mode];
-            const maxWidth = wrapper.clientWidth - 20;
-            const maxHeight = wrapper.clientHeight - 20;
-            
-            const iWidth = img.naturalWidth || 800;
-            const iHeight = img.naturalHeight || 600;
-            const imgRatio = iWidth / iHeight;
-
-            if (maxWidth / maxHeight > imgRatio) {
-                target.el.height = maxHeight;
-                target.el.width = maxHeight * imgRatio;
-            } else {
-                target.el.width = maxWidth;
-                target.el.height = maxWidth / imgRatio;
-            }
-            drawBackground(mode);
-        }
-
-        function drawBackground(mode) {
-            const target = canvases[mode];
-            target.ctx.fillStyle = "white";
-            target.ctx.fillRect(0, 0, target.el.width, target.el.height);
-            if (img.complete && img.naturalWidth > 0) {
-                target.ctx.drawImage(img, 0, 0, target.el.width, target.el.height);
-            }
-        }
-
-        function switchTab(mode, btn) {
-            currentMode = mode;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('canvas').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            canvases[mode].el.classList.add('active');
-        }
-
-        function changeColor() {
-            colorIndex = (colorIndex + 1) % colors.length;
-            colorText.innerText = colorNames[colorIndex];
-            colorText.style.color = colors[colorIndex];
-        }
-
-        function clearCurrentCanvas() {
-            drawBackground(currentMode);
-        }
-
-        // Çizim İşlemleri
-        function handleStart(e) {
-            drawing = true;
-            const pos = getPos(e);
-            canvases[currentMode].ctx.beginPath();
-            canvases[currentMode].ctx.moveTo(pos.x, pos.y);
-            if(e.cancelable) e.preventDefault();
-        }
-
-        function handleMove(e) {
-            if (!drawing) return;
-            const pos = getPos(e);
-            const ctx = canvases[currentMode].ctx;
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = colors[colorIndex];
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            if(e.cancelable) e.preventDefault();
-        }
-
-        function getPos(e) {
-            const rect = canvases[currentMode].el.getBoundingClientRect();
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            return {
-                x: (clientX - rect.left) * (canvases[currentMode].el.width / rect.width),
-                y: (clientY - rect.top) * (canvases[currentMode].el.height / rect.height)
-            };
-        }
-
-        Object.values(canvases).forEach(obj => {
-            obj.el.addEventListener('mousedown', handleStart);
-            obj.el.addEventListener('mousemove', handleMove);
-            obj.el.addEventListener('touchstart', handleStart, {passive:false});
-            obj.el.addEventListener('touchmove', handleMove, {passive:false});
-        });
-
-        window.addEventListener('mouseup', () => drawing = false);
-        window.addEventListener('touchend', () => drawing = false);
-    </script>
-</body>
-</html>
+            const

@@ -13,12 +13,12 @@
         .tab-container { display: flex; gap: 5px; background: #333; padding: 5px; border-radius: 8px; }
         .tab-btn { padding: 10px 20px; background: transparent; color: #888; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .tab-btn.active { background: #bc13fe; color: white; }
-        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .btn-group { display: flex; gap: 15px; align-items: center; }
         .btn-action { padding: 10px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
         
-        /* Kalınlık Ayarı Stili */
-        .thickness-container { display: flex; align-items: center; gap: 8px; color: white; font-size: 0.9rem; font-weight: bold; }
-        #thicknessSlider { cursor: pointer; accent-color: #bc13fe; width: 100px; }
+        /* Kalınlık Slider Stili */
+        .thickness-box { display: flex; align-items: center; gap: 8px; color: white; font-size: 0.9rem; font-weight: bold; }
+        input[type=range] { cursor: pointer; accent-color: #bc13fe; }
 
         #canvas-wrapper { position: relative; flex-grow: 1; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         canvas { position: absolute; background-color: white; box-shadow: 0 0 30px rgba(0,0,0,0.7); touch-action: none; display: none; }
@@ -33,19 +33,17 @@
             <img src="logo.png" id="team-logo" alt="LOTH">
             <span>LOTH 8182</span>
         </div>
-        
         <div class="tab-container">
             <button id="btn-auto" class="tab-btn active" onclick="switchTab('auto')">OTONOM</button>
             <button id="btn-teleop" class="tab-btn" onclick="switchTab('teleop')">TELEOP</button>
         </div>
-
         <div class="btn-group">
-            <div class="thickness-container">
+            <div class="thickness-box">
                 <span>Kalınlık:</span>
-                <input type="range" id="thicknessSlider" min="1" max="20" value="4" oninput="updateThicknessDisplay(this.value)">
-                <span id="thicknessVal">4</span>
+                <input type="range" id="pen-thickness" min="1" max="20" value="4" oninput="updateThickness(this.value)">
+                <span id="thick-val">4</span>
             </div>
-            
+
             <button class="btn-action" style="background:#444; color:white; border:1px solid #bc13fe" onclick="changeColor()">Renk: <span id="color-text" style="color:#bc13fe">Mor</span></button>
             <button class="btn-action" style="background:#ff4d4d; color:white" onclick="clearCurrentCanvas()">Temizle</button>
         </div>
@@ -61,8 +59,7 @@
     <script>
         const img = document.getElementById('field-img');
         const colorText = document.getElementById('color-text');
-        const thicknessSlider = document.getElementById('thicknessSlider');
-        const thicknessValDisplay = document.getElementById('thicknessVal');
+        const thickValLabel = document.getElementById('thick-val');
         
         const canvases = {
             auto: { el: document.getElementById('canvas-auto'), ctx: document.getElementById('canvas-auto').getContext('2d') },
@@ -74,24 +71,21 @@
         let colors = ['#bc13fe', '#000000', '#007bff','#8f0801'];
         let colorNames = ['Mor', 'Siyah', 'Mavi','Kırmızı'];
         let colorIndex = 0;
-        let currentThickness = 4; // Varsayılan kalınlık
+        let strokeWidth = 4; // Varsayılan kalınlık
 
         function init() {
             Object.keys(canvases).forEach(setupCanvas);
         }
 
         img.onload = init;
-        img.onerror = () => {
-            console.error("Görsel yüklenemedi, beyaz tahta moduna geçiliyor.");
-            init();
-        };
+        img.onerror = () => { init(); };
         if (img.complete) init();
         window.onresize = init;
 
-        // Kalınlık değerini ekranda güncelleme fonksiyonu
-        function updateThicknessDisplay(val) {
-            currentThickness = val;
-            thicknessValDisplay.innerText = val;
+        // Çizgi kalınlığını güncelleyen fonksiyon
+        function updateThickness(val) {
+            strokeWidth = val;
+            thickValLabel.innerText = val;
         }
 
         function setupCanvas(mode) {
@@ -153,9 +147,8 @@
         function startDrawing(e) {
             drawing = true;
             const pos = getPos(e);
-            const ctx = canvases[currentMode].ctx;
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
+            canvases[currentMode].ctx.beginPath();
+            canvases[currentMode].ctx.moveTo(pos.x, pos.y);
             if(e.cancelable) e.preventDefault();
         }
 
@@ -163,8 +156,23 @@
             if (!drawing) return;
             const pos = getPos(e);
             const ctx = canvases[currentMode].ctx;
-            
-            // Kalınlık burada dinamik olarak ayarlanıyor
-            ctx.lineWidth = currentThickness; 
+            ctx.lineWidth = strokeWidth; // Kalınlık artık değişken
             ctx.lineCap = 'round';
-            ctx.strokeStyle = colors[colorIndex
+            ctx.strokeStyle = colors[colorIndex];
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            if(e.cancelable) e.preventDefault();
+        }
+
+        Object.values(canvases).forEach(obj => {
+            obj.el.addEventListener('mousedown', startDrawing);
+            obj.el.addEventListener('mousemove', draw);
+            obj.el.addEventListener('touchstart', startDrawing, {passive: false});
+            obj.el.addEventListener('touchmove', draw, {passive: false});
+        });
+
+        window.addEventListener('mouseup', () => drawing = false);
+        window.addEventListener('touchend', () => drawing = false);
+    </script>
+</body>
+</html>

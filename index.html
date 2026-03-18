@@ -41,22 +41,23 @@
         .btn-color:hover { background: #45a049; }
 
         #canvas-container {
-            position: relative;
-            margin-top: 10px;
-            width: 95vw; /* Genişliği ekranın %95'i yapar */
-            display: flex;
-            justify-content: center;
-        }
+    position: relative;
+    margin-top: 10px;
+    width: 98vw;        /* Ekran genişliğinin neredeyse tamamı */
+    height: 80vh;       /* Ekran yüksekliğinin %80'i ile sınırla */
+    overflow: auto;     /* İçerik taşarsa kaydırma çubuklarını otomatik ekle */
+    border: 2px solid #333;
+    background-color: #ddd;
+    display: block;     /* Kaydırma için block olmalı */
+}
 
-        canvas {
-            max-width: 100%; /* Resim ekrandan taşmaz */
-            height: auto;
-            display: block;
-            cursor: crosshair;
-            background-color: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            touch-action: none; /* Mobilde çizim yaparken ekranın kaymasını önler */
-        }
+canvas {
+    display: block;
+    cursor: crosshair;
+    background-color: white;
+    touch-action: none; 
+    /* Resmin orijinal genişliğini korumak için max-width'i kaldırabilirsin */
+}
 
         #field-img {
             display: none; /* Arka planda yüklenmesi için */
@@ -92,25 +93,16 @@
             setupCanvas();
         };
 
-       function setupCanvas() {
-            // Ekran genişliğine göre uygun boyutu hesapla
-            const availableWidth = window.innerWidth * 0.95;
-            const ratio = img.height / img.width;
+      function setupCanvas() {
+    // Resmi orijinal boyutunda bırakalım ki aşağı doğru kaysın
+    canvas.width = img.width;
+    canvas.height = img.height;
+    drawBackground();
+}
 
-            if (img.width > availableWidth) {
-                canvas.width = availableWidth;
-                canvas.height = availableWidth * ratio;
-            } else {
-                canvas.width = img.width;
-                canvas.height = img.height;
-            }
-            drawBackground();
-        }
-
-        function drawBackground() {
-            // Resmi her zaman canvas boyutuna sığdırarak çiz
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        }
+function drawBackground() {
+    ctx.drawImage(img, 0, 0);
+}
 
         // Çizim İşlemleri
         canvas.addEventListener('mousedown', startDrawing);

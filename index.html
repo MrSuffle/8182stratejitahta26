@@ -40,24 +40,29 @@
         .btn-color { background: #4CAF50; color: white; }
         .btn-color:hover { background: #45a049; }
 
-        #canvas-container {
-    position: relative;
-    margin-top: 10px;
-    width: 98vw;        /* Ekran genişliğinin neredeyse tamamı */
-    height: 80vh;       /* Ekran yüksekliğinin %80'i ile sınırla */
-    overflow: auto;     /* İçerik taşarsa kaydırma çubuklarını otomatik ekle */
-    border: 2px solid #333;
-    background-color: #ddd;
-    display: block;     /* Kaydırma için block olmalı */
-}
+       #canvas-container {
+            position: relative;
+            margin-top: 5px;
+            width: 98vw;
+            /* Ekran yüksekliğinden üstteki menü barının (yaklaşık 60px) payını çıkarıyoruz */
+            height: calc(100vh - 70px); 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: hidden; /* Kaydırma çubuklarını tamamen kaldırır */
+        }
 
-canvas {
-    display: block;
-    cursor: crosshair;
-    background-color: white;
-    touch-action: none; 
-    /* Resmin orijinal genişliğini korumak için max-width'i kaldırabilirsin */
-}
+        canvas {
+            /* Hem genişlik hem yükseklik için hangisi önce dolarsa ona göre sığdırır */
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; 
+            display: block;
+            cursor: crosshair;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            touch-action: none;
+        }
 
         #field-img {
             display: none; /* Arka planda yüklenmesi için */
@@ -94,15 +99,32 @@ canvas {
         };
 
       function setupCanvas() {
-    // Resmi orijinal boyutunda bırakalım ki aşağı doğru kaysın
-    canvas.width = img.width;
-    canvas.height = img.height;
-    drawBackground();
-}
+            const container = document.getElementById('canvas-container');
+            const maxWidth = container.clientWidth;
+            const maxHeight = container.clientHeight;
+            
+            const imgRatio = img.width / img.height;
+            const containerRatio = maxWidth / maxHeight;
 
-function drawBackground() {
-    ctx.drawImage(img, 0, 0);
-}
+            if (imgRatio > containerRatio) {
+                // Resim container'dan daha genişse
+                canvas.width = maxWidth;
+                canvas.height = maxWidth / imgRatio;
+            } else {
+                // Resim container'dan daha uzunsa
+                canvas.height = maxHeight;
+                canvas.width = maxHeight * imgRatio;
+            }
+
+            drawBackground();
+        }
+
+        function drawBackground() {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
+
+        // Pencere boyutu değiştiğinde resmi tekrar boyutlandır (Responsive olması için)
+        window.addEventListener('resize', setupCanvas);
 
         // Çizim İşlemleri
         canvas.addEventListener('mousedown', startDrawing);

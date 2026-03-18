@@ -3,79 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strateji Planlama Tahtası</title>
+    <title>8182 Dragon Strateji Tahtası</title>
     <style>
         body {
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f0f0f0;
-            font-family: sans-serif;
+            background-color: #121212; /* Koyu modern arka plan */
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            height: 100vh;
             overflow: hidden;
         }
 
         #toolbar {
-            padding: 10px;
-            background: #333;
+            padding: 0 20px;
+            background: #1e1e1e;
             width: 100%;
+            height: 70px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            border-bottom: 2px solid #bc13fe;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        /* Logo Bölümü */
+        #logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #team-logo {
+            height: 50px;
+            width: auto;
+            filter: drop-shadow(0 0 5px #bc13fe);
+        }
+
+        #logo-section span {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        /* Butonlar */
+        #button-group {
+            display: flex;
             gap: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         button {
-            padding: 8px 16px;
+            padding: 10px 20px;
             cursor: pointer;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: bold;
             transition: 0.3s;
+            text-transform: uppercase;
         }
 
-        .btn-clear { background: #ff4d4d; color: white; }
-        .btn-clear:hover { background: #cc0000; }
+        .btn-color { background: #bc13fe; color: white; }
+        .btn-color:hover { background: #9b0dd1; transform: scale(1.05); }
 
-        .btn-color { background: #4CAF50; color: white; }
-        .btn-color:hover { background: #45a049; }
+        .btn-clear { background: #333; color: #ff4d4d; border: 1px solid #ff4d4d; }
+        .btn-clear:hover { background: #ff4d4d; color: white; }
 
-       #canvas-container {
+        #color-info {
+            color: white;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        /* Çizim Alanı */
+        #canvas-container {
             position: relative;
-            margin-top: 5px;
+            flex-grow: 1;
             width: 98vw;
-            /* Ekran yüksekliğinden üstteki menü barının (yaklaşık 60px) payını çıkarıyoruz */
-            height: calc(100vh - 70px); 
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            overflow: hidden; /* Kaydırma çubuklarını tamamen kaldırır */
+            align-items: center;
+            overflow: hidden;
+            padding: 10px;
         }
 
         canvas {
-            /* Hem genişlik hem yükseklik için hangisi önce dolarsa ona göre sığdırır */
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain; 
-            display: block;
-            cursor: crosshair;
             background-color: white;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            touch-action: none;
+            cursor: crosshair;
+            box-shadow: 0 0 20px rgba(0,0,0,0.4);
+            touch-action: none; /* Mobilde kaydırmayı engeller */
         }
 
-        #field-img {
-            display: none; /* Arka planda yüklenmesi için */
+        #field-img { display: none; }
+
+        @media (max-width: 768px) {
+            #logo-section span { display: none; }
+            #color-info { display: none; }
         }
     </style>
 </head>
 <body>
 
     <div id="toolbar">
-    <button class="btn-color" onclick="changeColor()">Renk Değiştir</button>
-    <button class="btn-clear" onclick="clearCanvas()">Ekranı Temizle</button>
-    <span style="color: white; line-height: 35px;">Aktif Renk: <b id="color-indicator" style="color: purple;">Mor</b></span>
-</div>
+        <div id="logo-section">
+            <img src="logo.png" alt="8182 Logo" id="team-logo">
+            <span>DRAGON 8182</span>
+        </div>
+
+        <div id="button-group">
+            <button class="btn-color" onclick="changeColor()">Renk Değiştir</button>
+            <button class="btn-clear" onclick="clearCanvas()">Temizle</button>
+        </div>
+
+        <div id="color-info">
+            Renk: <b id="color-indicator" style="color: #bc13fe; font-size: 18px;">Mor</b>
+        </div>
+    </div>
 
     <div id="canvas-container">
         <canvas id="strategyCanvas"></canvas>
@@ -90,34 +136,14 @@
         const colorIndicator = document.getElementById('color-indicator');
 
         let drawing = false;
-        // İstediğin renkleri buraya ekledik
-        let colors = ['purple', 'black', 'blue']; 
+        let colors = ['#bc13fe', 'black', 'blue']; 
         let colorNames = ['Mor', 'Siyah', 'Mavi'];
         let colorIndex = 0;
 
-        // Renk değiştirme fonksiyonu
-        function changeColor() {
-            colorIndex = (colorIndex + 1) % colors.length;
-            const activeColor = colors[colorIndex];
-            const activeName = colorNames[colorIndex];
-            
-            colorIndicator.innerText = activeName;
-            colorIndicator.style.color = activeColor;
-            
-            // Siyah renk koyu gri arka planda görünmezse diye beyaz gölge ekleyelim
-            if(activeColor === 'black') {
-                colorIndicator.style.textShadow = "1px 1px 0px white";
-            } else {
-                colorIndicator.style.textShadow = "none";
-            }
-        }
+        img.onload = setupCanvas;
+        window.addEventListener('resize', setupCanvas);
 
-        // Görsel yüklendiğinde canvas boyutlarını ayarla
-        img.onload = function() {
-            setupCanvas();
-        };
-
-      function setupCanvas() {
+        function setupCanvas() {
             const container = document.getElementById('canvas-container');
             const maxWidth = container.clientWidth;
             const maxHeight = container.clientHeight;
@@ -126,15 +152,12 @@
             const containerRatio = maxWidth / maxHeight;
 
             if (imgRatio > containerRatio) {
-                // Resim container'dan daha genişse
                 canvas.width = maxWidth;
                 canvas.height = maxWidth / imgRatio;
             } else {
-                // Resim container'dan daha uzunsa
                 canvas.height = maxHeight;
                 canvas.width = maxHeight * imgRatio;
             }
-
             drawBackground();
         }
 
@@ -142,55 +165,73 @@
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
-        // Pencere boyutu değiştiğinde resmi tekrar boyutlandır (Responsive olması için)
-        window.addEventListener('resize', setupCanvas);
-
-        // Çizim İşlemleri
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        function startDrawing(e) {
-            drawing = true;
-            draw(e); 
-        }
-
-        function draw(e) {
-            if (!drawing) return;
+        function changeColor() {
+            colorIndex = (colorIndex + 1) % colors.length;
+            const activeColor = colors[colorIndex];
+            const activeName = colorNames[colorIndex];
             
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = colors[colorIndex];
-
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
+            colorIndicator.innerText = activeName;
+            colorIndicator.style.color = activeColor;
+            
+            if(activeColor === 'black') {
+                colorIndicator.style.textShadow = "1px 1px 0px white";
+            } else {
+                colorIndicator.style.textShadow = "none";
+            }
         }
 
-        function stopDrawing() {
-            drawing = false;
-            ctx.beginPath();
-        }
-
-        // Buton Fonksiyonları
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground();
         }
 
-        function changeColor() {
-            colorIndex = (colorIndex + 1) % colors.length;
-            const activeColor = colors[colorIndex];
-            colorIndicator.innerText = activeColor.charAt(0).toUpperCase() + activeColor.slice(1);
-            colorIndicator.style.color = activeColor;
+        // Çizim İşlemleri
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Mouse veya Dokunma olayını ayarla
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
         }
-    </script>
 
+        function startDrawing(e) {
+            drawing = true;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            if(e.type === 'touchstart') e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const pos = getMousePos(e);
+
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = colors[colorIndex];
+
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            if(e.type === 'touchmove') e.preventDefault();
+        }
+
+        function stopDrawing() {
+            drawing = false;
+        }
+
+        // Event Listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+    </script>
 </body>
 </html>

@@ -42,14 +42,20 @@
 
         #canvas-container {
             position: relative;
-            margin-top: 20px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            margin-top: 10px;
+            width: 95vw; /* Genişliği ekranın %95'i yapar */
+            display: flex;
+            justify-content: center;
         }
 
         canvas {
+            max-width: 100%; /* Resim ekrandan taşmaz */
+            height: auto;
             display: block;
             cursor: crosshair;
             background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            touch-action: none; /* Mobilde çizim yaparken ekranın kaymasını önler */
         }
 
         #field-img {
@@ -86,15 +92,24 @@
             setupCanvas();
         };
 
-        function setupCanvas() {
-            // Görselin orijinal boyutlarını kullanıyoruz
-            canvas.width = img.width;
-            canvas.height = img.height;
+       function setupCanvas() {
+            // Ekran genişliğine göre uygun boyutu hesapla
+            const availableWidth = window.innerWidth * 0.95;
+            const ratio = img.height / img.width;
+
+            if (img.width > availableWidth) {
+                canvas.width = availableWidth;
+                canvas.height = availableWidth * ratio;
+            } else {
+                canvas.width = img.width;
+                canvas.height = img.height;
+            }
             drawBackground();
         }
 
         function drawBackground() {
-            ctx.drawImage(img, 0, 0);
+            // Resmi her zaman canvas boyutuna sığdırarak çiz
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
         // Çizim İşlemleri
